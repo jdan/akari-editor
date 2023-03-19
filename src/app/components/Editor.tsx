@@ -145,6 +145,28 @@ export function Editor() {
   return (
     <>
       <div
+        style={{
+          display: "flex",
+        }}
+      >
+        <label>
+          Width:
+          <input
+            type="number"
+            value={width}
+            onChange={(e) => setWidth(parseInt(e.target.value))}
+          />
+        </label>
+        <label>
+          Height:
+          <input
+            type="number"
+            value={height}
+            onChange={(e) => setHeight(parseInt(e.target.value))}
+          />
+        </label>
+      </div>
+      <div
         ref={wrapperRef}
         style={{
           display: "grid",

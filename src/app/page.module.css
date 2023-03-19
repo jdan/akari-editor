@@ -95,14 +95,14 @@
   z-index: -1;
 }
 
-.center::before,
+/* .center::before,
 .center::after {
   content: '';
   left: 50%;
   position: absolute;
   filter: blur(45px);
   transform: translateZ(0);
-}
+} */
 
 .logo,
 .thirteen {
@@ -125,7 +125,7 @@
 
 .thirteen::before,
 .thirteen::after {
-  content: '';
+  content: "";
   position: absolute;
   z-index: -1;
 }

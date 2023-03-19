@@ -4,6 +4,7 @@ import {
   MouseEvent,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -108,43 +109,89 @@ export function Editor() {
     };
   }, [wrapperRef]);
 
-  return (
-    <div
-      ref={wrapperRef}
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${width}, 1fr)`,
-        gridTemplateRows: `repeat(${height}, 1fr)`,
-        gap: 1,
-        background: gridColor,
-        border: `1px solid ${gridColor}`,
-      }}
-      onKeyDown={handleKeyDown}
-    >
-      {Array.from({ length: width * height }).map((_, i) => {
-        const x = i % width;
-        const y = Math.floor(i / width);
+  const serializeRun = useCallback((run: number) => {
+    const leadingZs = Math.floor(run / 26);
+    return (
+      Array.from({ length: leadingZs })
+        .map(() => "z")
+        .join("") + String.fromCharCode(96 + run - 26 * leadingZs)
+    );
+  }, []);
+
+  const gameId = useMemo(() => {
+    let gameStr = width + "x" + height + ":";
+    let currentRun = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
         const surface = surfaces.find((s) => s.x === x && s.y === y);
-        const isFocused = focus?.x === x && focus?.y === y;
-        return (
-          <button
-            key={i}
-            onClick={() => handleClick(x, y)}
-            style={{
-              border: "none",
-              backgroundColor: surface ? "black" : surfaceColor,
-              color: "white",
-              width: 40,
-              height: 40,
-              outline: isFocused ? "4px solid #66b5ff" : "none",
-              zIndex: isFocused ? 1 : 0,
-              fontSize: 24,
-            }}
-          >
-            {surface && surface.label !== "empty" ? surface.label : null}
-          </button>
-        );
-      })}
-    </div>
+        if (surface) {
+          if (currentRun > 0) {
+            gameStr += serializeRun(currentRun);
+          }
+          gameStr += surface.label === "empty" ? "B" : surface.label;
+          currentRun = 0;
+        } else {
+          currentRun++;
+        }
+      }
+    }
+
+    if (currentRun > 0) {
+      gameStr += serializeRun(currentRun);
+    }
+    return gameStr;
+  }, [surfaces, width, height]);
+
+  return (
+    <>
+      <div
+        ref={wrapperRef}
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${width}, 1fr)`,
+          gridTemplateRows: `repeat(${height}, 1fr)`,
+          gap: 1,
+          background: gridColor,
+          border: `1px solid ${gridColor}`,
+        }}
+        onKeyDown={handleKeyDown}
+      >
+        {Array.from({ length: width * height }).map((_, i) => {
+          const x = i % width;
+          const y = Math.floor(i / width);
+          const surface = surfaces.find((s) => s.x === x && s.y === y);
+          const isFocused = focus?.x === x && focus?.y === y;
+          return (
+            <button
+              key={i}
+              onClick={() => handleClick(x, y)}
+              style={{
+                border: "none",
+                backgroundColor: surface ? "black" : surfaceColor,
+                color: "white",
+                width: 40,
+                height: 40,
+                outline: isFocused ? "4px solid #66b5ff" : "none",
+                zIndex: isFocused ? 1 : 0,
+                fontSize: 24,
+              }}
+            >
+              {surface && surface.label !== "empty" ? surface.label : null}
+            </button>
+          );
+        })}
+      </div>
+      <a
+        target="_blank"
+        href={`https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/lightup.html#${gameId}`}
+        style={{
+          paddingTop: 4,
+          color: "blue",
+          textDecoration: "underline",
+        }}
+      >
+        {gameId}
+      </a>
+    </>
   );
 }
